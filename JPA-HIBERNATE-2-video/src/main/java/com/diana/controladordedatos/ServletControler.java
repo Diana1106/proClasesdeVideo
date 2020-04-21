@@ -10,7 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.diana.DAO.ProductoDao;
 import com.diana.model.Producto;
+import com.google.gson.Gson;
 import com.sun.beans.util.Cache;
 
 /**
@@ -32,72 +34,85 @@ public class ServletControler extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		
+		Producto pr = new Producto();
+		ProductoDao prd = new ProductoDao();
+		
+		String id = null;
+		String nombreProducto = null;
+		String precioProducto = null;
+		String cantidadProducto = null;
+		String totalProducto = null;
+		
+		try {
+			id = request.getParameter("Id_pro");
+			nombreProducto = request.getParameter("Nproductos");
+			precioProducto = request.getParameter("Pproductos");
+			cantidadProducto = request.getParameter("Cproductos");
+			totalProducto = request.getParameter("Tproductos");
+			
+			pr.setIdProductos(Integer.parseInt(id));
+			pr.setNombreProducto(nombreProducto);
+			pr.setPrecioProducto(Double.parseDouble(precioProducto));
+			pr.setCantidadProducto(Integer.parseInt(cantidadProducto));
+			pr.setTotalProducto(Double.parseDouble(totalProducto));
+		}catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+	
+		
+		String acction = request.getParameter("btn");
+		
+		
+		if (acction.equals("GUARDAR")){
+			pr.setIdProductos(Integer.parseInt(id));
+			pr.setNombreProducto(nombreProducto);
+			pr.setPrecioProducto(Double.parseDouble(precioProducto));
+			pr.setCantidadProducto(Integer.parseInt(cantidadProducto));
+			pr.setTotalProducto(Double.parseDouble(totalProducto));
+		
+			prd.agregarDatos(pr);	
+		}
+		else if(acction.equals("ACTUALIZAR")){
+			pr.setIdProductos(Integer.parseInt(id));
+			pr.setNombreProducto(nombreProducto);
+			pr.setPrecioProducto(Double.parseDouble(precioProducto));
+			pr.setCantidadProducto(Integer.parseInt(cantidadProducto));
+			pr.setTotalProducto(Double.parseDouble(totalProducto));
+		
+		prd.actualizarDatos(pr);
+		}
+		
+	else if(acction.equals("ELIMINAR")){
+		pr.setIdProductos(Integer.parseInt(id));
+	    prd.eliminarDatos(pr);
+	}
+		
+		
+		
+		
+		response.sendRedirect("index.jsp");
+		
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		String acction = request.getParameter("btn");
-		EntityManager em;
-		EntityManagerFactory emf;
 		
-		emf = Persistence.createEntityManagerFactory("JPA-HIBERNATE-2-video");
-		em = emf.createEntityManager();
+		ProductoDao prdao = new ProductoDao();
 		
-		Producto pr = new Producto();
+		Gson json = new Gson();
 		
 		try {
-		String id = request.getParameter("Id_pro");
-		String nombreProducto = request.getParameter("Nproductos");
-		String precioProducto = request.getParameter("Pproductos");
-		String cantidadProducto = request.getParameter("Cproductos");
-		String totalProducto = request.getParameter("Tproductos");
-		
-		
-		
-		pr.setIdProductos(Integer.parseInt(id));
-		pr.setNombreProducto(nombreProducto);
-		pr.setPrecioProducto(Double.parseDouble(precioProducto));
-		pr.setCantidadProducto(Integer.parseInt(cantidadProducto));
-		pr.setTotalProducto(Double.parseDouble(totalProducto));
-		
+			
+			response.getWriter().append(json.toJson(prdao.productoLista ()));
+			
 		} catch (Exception e) {
-			// TODO: handle exception
+			System.out.println(e);
 		}
-		
-		if (acction.equals("agregar")){
-		  //System.out.println("SOY AGREGAR");
-			
-			em.getTransaction().begin();
-			em.persist(pr);
-			em.flush();
-			em.getTransaction().commit();
-		  
-		}else if(acction.equals("eliminar")){
-		  //System.out.println("SOY ELIMINAR");
-			
-			
-			pr = em.getReference(Producto.class, pr.getIdProductos());
-			em.getTransaction().begin();
-			em.remove(pr);
-			em.flush();
-			em.getTransaction().commit();
-		
-
-		}else if(acction.equals("modificar")){
-		  //System.out.println("SOY MODIFICAR");
-			
-			em.getTransaction().begin();
-			em.merge(pr);
-			em.flush();
-			em.getTransaction().commit();
-
-		}
-		response.sendRedirect("index.jsp");
-		
+	
 	}
 
 }
